@@ -196,3 +196,5 @@ void displayFooter() { // Displays help text at the bottom
 String title ="6491-2015-P1: Animation of "+(nbs*nbs*nbs)+" Colliding Balls ", name ="Your Name here!", 
   menu="?:help, !:picture, ~:videotape, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit", 
   guide="m:speed, e:exchange, q/p:copy, l/L: load, w/W:write to file"; // user's guide
+
+
