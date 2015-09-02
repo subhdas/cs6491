@@ -20,12 +20,12 @@ float mv=3;             // magnifier of max initial speed of the balls
 pt F = P(0, 0, 0); // focus point:  the camera is looking at it (moved when 'f or 'F' are pressed
 pt Of=P(100, 100, 0), Ob=P(110, 110, 0); // red point controlled by the user via mouseDrag : used for inserting vertices ...
 
-int nbs = 4;                    // number of balls = nbs*nbs*nbs
+int nbs = 3;                    // number of balls = nbs*nbs*nbs
 float br = 20;                  // ball radius
 int frate = 20;                 // frame rate
 float u = 1./frate;             // time between consecutive frames
 float vRange = 1;               // range of initial speed
-boolean firstCollision = false;
+boolean firstCollision = false; // whether the first collision is about to happen in the next frame
 boolean stop=false; // stops animation if computation took  more than u
 boolean individual=false;
 boolean showV=false;
@@ -134,6 +134,13 @@ void draw() {
          nf(collisions,3,0)+" collisions per frame",10,40); 
   scribe("dt01 = "+nf(dt01,2,1)+"%, dt12 = "+nf(dt12,2,1)+"%, dt23 = " +
          nf(dt23,2,1)+"%, dt34 = "+nf(dt34,2,1)+"%",10,60);
+
+  if(firstCollision){
+    displayCollisionTime();
+  }
+  
+  change=false; // to avoid capturing frames when nothing happens (change is set uppn action)
+
   if(filming && (animating || change)) saveFrame("FRAMES/F"+nf(frameCounter++,4)+".png");  // save next frame to make a movie
 
   if((t4-t0)/10/u>99 || stop) {
@@ -142,26 +149,6 @@ void draw() {
     stop=true;
   }
 
-  
-  if(firstCollision){
-    P.c[P.minIndex] = 0;
-    int id = P.colli[P.minIndex].p;
-    if (id >=0 ){
-      P.c[id] = 0;
-      scribe("collision is about to happen between ball id " +
-             nf(P.minIndex, 2) + "and ball id " + nf(id, 2) +
-             " : the two black balls."
-             , 10, 100);
-    }
-    else {
-      scribe("collision is about to happen between the black ball id " +
-             nf(P.minIndex, 2) + " and wall. "
-             , 10, 100);
-    }
-    scribe("The first collision time is " +  nf(P.minTime, 2, 2) + " seconds. ", 10, 120);
-  }
-  
-  change=false; // to avoid capturing frames when nothing happens (change is set uppn action)
   
 }
 
@@ -270,4 +257,24 @@ void displayFooter() { // Displays help text at the bottom
 }
 
 
+/**
+ * Display the first collision time
+ */
+void displayCollisionTime(){
+  P.c[P.minIndex] = 0;
+  int id = P.colli[P.minIndex].p;
+  if (id >=0 ){
+    P.c[id] = 0;
+    scribe("collision is about to happen between ball id " +
+           nf(P.minIndex, 2) + " and ball id " + nf(id, 2) +
+           " : the two black balls."
+           , 10, 100);
+  }
+  else {
+    scribe("collision is about to happen between the black ball id " +
+           nf(P.minIndex, 2) + " and wall. "
+           , 10, 100);
+  }
+  scribe("The first collision time is " +  nf(P.minTime, 2, 2) + " seconds. ", 10, 120);
 
+}

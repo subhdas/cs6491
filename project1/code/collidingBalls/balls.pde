@@ -63,6 +63,10 @@ class BALLS {          // class for manipulaitng and displaying points
   }
 
 
+  /**
+   * this alternative initialization function is used to test the one to one collision
+   * for debug purpose.
+   */
   // void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
   //   empty();
 
@@ -147,6 +151,15 @@ class BALLS {          // class for manipulaitng and displaying points
     }
   }
 
+  /**
+   * Calculate the collision between a ball and the six
+   * walls.
+   *
+   * @param a  the position of the ball
+   * @param v  the velocity of the ball
+   * @param w  the width of the wall
+   * @param r  the radius of the ball
+   */
   float[] calB2WTimeAll(pt a, vec v, float w, float r){
     float[] time = new float[6];
     
@@ -162,7 +175,10 @@ class BALLS {          // class for manipulaitng and displaying points
     // for( int i = 0; i < 6; i++) println(time[i]);
     return time;
   }
-  
+
+  /**
+   * Initialize the collision structure.
+   */ 
   void initCollision(float w){
     colli = new Colli[nv];
  
@@ -195,6 +211,10 @@ class BALLS {          // class for manipulaitng and displaying points
     minTime = colli[minIndex].t;
   }
 
+  /**
+   * Obtain the next collision index ball and update the next collision
+   * time.
+   */
   int getMinIndex(){
     int minIndex = -1;
     float minT = Float.POSITIVE_INFINITY;
