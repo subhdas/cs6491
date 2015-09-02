@@ -1,20 +1,12 @@
-int pp=1; // index of picked vertex
-BALLS P = new BALLS(); // polyloop in 3D
-BALLS Q = new BALLS(); // second polyloop in 3D
-BALLS PtQ = new BALLS(); // inbetweening polyloop L(P,t,Q);
-int del = 5; // delay fo rcolors to stay after collision
-
-class Pair {
-  int b1, b2;
+class Colli{
+  int p;
   float t;
 
-  Pair(int ball1, int ball2, float time){
-    b1 = ball1;
-    b2 = ball2;
+  Colli (int index, float time){
+    p = index;
     t = time;
   }
 }
-
 
 class BALLS {          // class for manipulaitng and displaying points
   Boolean loop=true;
@@ -35,7 +27,9 @@ class BALLS {          // class for manipulaitng and displaying points
   static final int Wzp = -5;
   static final int Wzn = -6;
 
-  ArrayList collision = new ArrayList<Pair>();
+  Colli[] colli;
+  int minIndex;
+  float minTime;
   
   BALLS() {
   }
@@ -51,50 +45,104 @@ class BALLS {          // class for manipulaitng and displaying points
     return this;
   }     // init all point objects
 
-  void initPointsOnGrid(int nb, float w, float r, color c) { // number of BALLS in each dimension, distance between them 
+  /**
+   * initialize balls on a grid [nb x nb x nb]
+   * @param nb number of BALLS in each dimension
+   * @param w  length of cube
+   * @param r  radius of the ball
+   * @param c  color of the ball
+   */
+  void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
     empty();
     float d = w / (nb+1), dd=d;
     for (int i=0; i<nb; i++) 
       for (int j=0; j<nb; j++) 
         for (int k=0; k<nb; k++)
-          addBall(P(d*i-w/2+dd, d*j-w/2+dd, d*k-w/2+dd), V(random(-1, 1), random(-1, 1), random(-1, 1)), r, c);
+          addBall(P(d*i-w/2+dd, d*j-w/2+dd, d*k-w/2+dd),
+                  V(random(-vRange, vRange), random(-vRange, vRange), random(-vRange, vRange)), r, c);
   }
 
 
-  float calB2BTime(pt a, pt b, vec va, vec vb, float ra, float rb){
+  // void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
+  //   empty();
+
+  //   int No = 3;
+  //   switch (No) {
+      
+  //   case 1:                     // test bounce wall
+  //     addBall(P(-100, 100, 0), V(1, 0, 0), r, c);
+  //     addBall(P(100, 100, 0), V(1, 0, 0), r, c);
+  //     break;
+      
+  //   case 2:                     // test ball bounce
+  //     addBall(P(-100, 100, 0), V(1, 0, 0), r, c);
+  //     addBall(P(100, 100, 0), V(-1, 0, 0), r, c);
+  //     break;
+
+  //   case 3: // test a more complicated case
+  //     addBall(P(-100, 0, 100), V(1, 0, -1), r, c);
+  //     addBall(P(100, 0, -100), V(-1, 0, 1), r, c);
+
+  //   default:
+  //     break;
+  //   }
+  // }
+
+
+  /**
+   * Calculate the collision time between two balls. If two balls cannot
+   * collide in positive finite time, the return -1.
+   * 
+   * @param A    ball A
+   * @param B    ball B
+   * @param va   the velocity of A
+   * @param vb   the velocity of B
+   * @param ra   the radius of A
+   * @param rb   the radius of B
+   */
+  float calB2BTime(pt A, pt B, vec va, vec vb, float ra, float rb){
     // solve (A-B)^2 + 2*(A-B)*(VA-VB)*t + (VA-VB)^2*t^2 = (rA+rB)^2
     // => a*t^2 + b*t + c = 0
-    vec ab = V(a, b);
-    vec vab = va.sub(vb);
+    vec ab = V(B, A);           // caution ! this is A - B
+    vec vab = va.sub2(vb); 
 
     float a = dot(vab, vab);
     float b = 2 * dot(ab, vab);
     float c = dot(ab, ab) - sq(ra + rb);
-
+    
     if(a == 0) {
-      retun Float.POSITIVE_INFINITY;
+      return -1.0;
     }
     else {
       float delta = sq(b) - 4 * a * c;
       if (delta < 0) {
-        return Float.POSITIVE_INFINITY;
+        return -1.0;
       }
       else {
         float t1 = (-b + sqrt(delta)) / (2 * a);
         float t2 = (-b - sqrt(delta)) / (2 * a);
         if (t1 >=0 && t2 >=0) return (t1 > t2 ? t2 : t1);
-        if (t1 >=0 && t2 <=0) return  t1;
-        if (t1 <=0 && t2 >=0) return t2;
-        if (t1 <=0 && t2 <=0) return Float.POSITIVE_INFINITY;
+        else if (t1 >=0 && t2 <=0) return  t1;
+        else if (t1 <=0 && t2 >=0) return t2;
+        else return -1.0;
       }          
     }        
   }
 
+  
+  /**
+   * Calculate the collision time between one ball and one wall.
+   * If they cannot collide in positive finite time, then return -1.
+   * 
+   * @param wall   one dimensional position of wall
+   * @param ball   one dimensional position of ball
+   * @param ve     one dimensional velocity of ball
+   */
   float calB2WTime(float wall, float ball, float v){
-    if (v == 0 ) return Float.POSITIVE_INFINITY;
+    if (v == 0 ) return -1;
     else {
       float time = (wall - ball) / v;
-      if (time < 0) return Float.POSITIVE_INFINITY;
+      if (time < 0) return -1;
       else return (wall - ball) / v;
     }
   }
@@ -102,57 +150,64 @@ class BALLS {          // class for manipulaitng and displaying points
   float[] calB2WTimeAll(pt a, vec v, float w, float r){
     float[] time = new float[6];
     
-    time[0] = callWallTime(-w/2+r, a.x, v.x);
-    time[1] = callWallTime(w/2-r, a.x, v.x);
+    time[0] = calB2WTime(-w/2+r, a.x, v.x);
+    time[1] = calB2WTime(w/2-r, a.x, v.x);
       
-    time[2] = callWallTime(-w/2+r, a.y, v.y);
-    time[3] = callWallTime(w/2-r, a.y, v.y);
+    time[2] = calB2WTime(-w/2+r, a.y, v.y);
+    time[3] = calB2WTime(w/2-r, a.y, v.y);
 
-    time[4] = callWallTime(-w/2+r, a.z, v.z);
-    time[5] = callWallTime(w/2-r, a.z, v.z);
+    time[4] = calB2WTime(-w/2+r, a.z, v.z);
+    time[5] = calB2WTime(w/2-r, a.z, v.z);
 
+    // for( int i = 0; i < 6; i++) println(time[i]);
     return time;
   }
   
   void initCollision(float w){
-    for ( int i = 0; i < collisionSize - 1; i++){
-
+    colli = new Colli[nv];
+ 
+    for ( int i = 0; i < nv; i++){
+      float minTime = Float.POSITIVE_INFINITY;
+      int index = 0;
+      
       // wall-ball collision
-      float[] t = calB2WTimeAll();
+      float[] t = calB2WTimeAll(G[i], V[i], w, r[i]);
       for (int j = 0; j < 6; j++){
-        if(t[j] != Float.POSITIVE_INFINITY) collision.add(Pair(i, -j-1, t[j]));
+        if(t[j] >= 0 && t[j] < minTime){
+          minTime = t[j];
+          index = -(j+1);
+        }
       }
 
       // ball-ball collision
-      for (int j = i + 1; j < collisionSize; j++){
-        float t = calB2BTime(G[i], G[j], V[i], V[j], r[i], r[j]);
-        if(t != Float.POSITIVE_INFINITY) collision.add(Pair(i, j, t));
+      for (int j = i + 1; j < nv; j++){
+        float tmp = calB2BTime(G[i], G[j], V[i], V[j], r[i], r[j]);
+        if(tmp >= 0 && tmp < minTime){
+          minTime = tmp;
+          index = j;
+        }
       }
+
+      colli[i] = new Colli(index, minTime);
     }
 
+    minIndex = getMinIndex();
+    minTime = colli[minIndex].t;
   }
+
+  int getMinIndex(){
+    int minIndex = -1;
+    float minT = Float.POSITIVE_INFINITY;
+    for (int i = 0; i < colli.length; i++){
+      if(colli[i].t < minT){
+        minIndex = i;
+        minT = colli[i].t;
+      }
+    }
+    return minIndex;
+  }
+
   
-
-  // calculate the index in b2bTime of collision betwee ball i and ball j
-  // Here, j > i.
-  int calCollisionIndex(int i, int j){
-    return collisionSize*i + j - 1 - (i+3)*i/2;
-  }
-
-  float getMinValue(float[] arr){  
-    double maxValue = numbers[0];  
-    for(int i = 1; i < numbers.length; i++){  
-      if(numbers[i] > maxValue){  
-        maxValue = numbers[i];
-      }
-    }
-    return maxValue;  
-  }  
-
-  float calFirstCollisionTime(){
-    for (int i = 0; i < collisionSize; i++)
-  }
-
   BALLS addBall(pt Pp, vec Vp, float rp, color cp) { 
     G[nv].setTo(Pp); 
     V[nv].setTo(Vp); 
@@ -162,11 +217,6 @@ class BALLS {          // class for manipulaitng and displaying points
     nv++;  
     return this;
   } // adds a point at the end
-
-
-  void calculateCollisionTime(){
-
-  }
 
   
   void showBalls() { 

@@ -15,6 +15,13 @@ class vec {
     x = px; 
     y = py;
   };
+
+  vec (vec v1){
+    x = v1.x;
+    y = v1.y;
+    z = v1.z;
+  }
+  
   vec set (float px, float py, float pz) {
     x = px; 
     y = py; 
@@ -51,6 +58,11 @@ class vec {
     z-=V.z; 
     return this;
   };
+
+  vec sub2(vec v1){
+    return new vec(x - v1.x, y - v1.y, z - v1.z);
+  }
+  
   vec mul(float f) {
     x*=f; 
     y*=f; 
