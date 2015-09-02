@@ -1,3 +1,15 @@
+///////////////////////////////////////////////////////////////////////
+// The latest instruction on Piazza says that we need to implement 
+// the code independently, so all the code I submitted is implemented
+// by myself.
+//
+// The main changes are:
+// 1) add two functions in pv3D.pde
+// 2) add a few functions and data structure in balls.pde to culculate 
+//    first the collision time
+// 3) change collidingBalls.pde to allow user to press 'i' to show result.
+//////////////////////////////////////////////////////////////////////
+
 int pp=1; // index of picked vertex
 BALLS P = new BALLS(); // polyloop in 3D
 BALLS Q = new BALLS(); // second polyloop in 3D
