@@ -146,11 +146,8 @@ void draw() {
          nf(collisions,3,0)+" collisions per frame",10,40); 
   scribe("dt01 = "+nf(dt01,2,1)+"%, dt12 = "+nf(dt12,2,1)+"%, dt23 = " +
          nf(dt23,2,1)+"%, dt34 = "+nf(dt34,2,1)+"%",10,60);
+  if(animating) displayCollisionTime();
 
-  if(firstCollision){
-    displayCollisionTime();
-  }
-  
   change=false; // to avoid capturing frames when nothing happens (change is set uppn action)
 
   if(filming && (animating || change)) saveFrame("FRAMES/F"+nf(frameCounter++,4)+".png");  // save next frame to make a movie
@@ -287,6 +284,6 @@ void displayCollisionTime(){
            nf(P.minIndex, 2) + " and wall. "
            , 10, 100);
   }
-  scribe("The first collision time is " +  nf(P.minTime, 2, 2) + " seconds. ", 10, 120);
+  scribe("The first collision time is " +  nf(P.minTime/frate, 2, 2) + " seconds. ", 10, 120);
 
 }
