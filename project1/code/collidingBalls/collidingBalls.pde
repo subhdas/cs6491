@@ -1,8 +1,4 @@
 ///////////////////////////////////////////////////////////////////////
-// The latest instruction on Piazza says that we need to implement 
-// the code independently, so all the code I submitted is implemented
-// by myself.
-//
 // The main changes are:
 // 1) add two functions in pv3D.pde
 // 2) add a few functions and data structure in balls.pde to culculate 
@@ -31,9 +27,9 @@ float mv=3;             // magnifier of max initial speed of the balls
 pt F = P(0, 0, 0); // focus point:  the camera is looking at it (moved when 'f or 'F' are pressed
 pt Of=P(100, 100, 0), Ob=P(110, 110, 0); // red point controlled by the user via mouseDrag : used for inserting vertices ...
 
-int nbs = 4;                    // number of balls = nbs*nbs*nbs
-float br = 20;                  // ball radius
-int frate = 20;                 // frame rate
+int nbs = 10;                    // number of balls = nbs*nbs*nbs
+float br = w/(nbs*pow(PI*120/4,1./3)); // ball radius
+int frate = 20;                        // frame rate
 float u = 1./frate;             // time between consecutive frames
 float vRange = 1;               // range of initial speed
 boolean stop=false; // stops animation if computation took  more than u
@@ -47,7 +43,6 @@ String name ="Xiong Ding";
 String menu="?:help, !:picture, ~:videotape, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit";
 String guide="m:speed, e:exchange, q/p:copy, l/L: load, w/W:write to file"; // user's guide
 
-PrintWriter outFile;
 void setup() {
   myFace = loadImage("data/selfie.JPG");
   textureMode(NORMAL);          
@@ -63,8 +58,6 @@ void setup() {
   P.initCollision(w);
   F = P();
   noSmooth();
-
-  outFile = createWriter("debug.txt"); 
 }
 
 void draw() {
@@ -96,8 +89,8 @@ void draw() {
   // println(accumT);
   if(animating && !stop) {
     P.updateState(mv, w);
-    if (P.checkBound(w) == false) stop = true;
     P.resetColors(cyan);
+    collisions = P.numOfCollisions;
   } // advection
 
   t2 = millis();
@@ -123,7 +116,7 @@ void draw() {
     displayHeader();
   }
   
-  if(scribeText && !filming) displayFooter(); // shows menu at bottom, only if not filming
+  // if(scribeText && !filming) displayFooter(); // shows menu at bottom, only if not filming
   if (animating) {
     t+=PI/180/2;
     if(t>=TWO_PI) t=0;
@@ -141,7 +134,7 @@ void draw() {
          nf(collisions,3,0)+" collisions per frame",10,40); 
   scribe("dt01 = "+nf(dt01,2,1)+"%, dt12 = "+nf(dt12,2,1)+"%, dt23 = " +
          nf(dt23,2,1)+"%, dt34 = "+nf(dt34,2,1)+"%",10,60);
-  // if(animating) displayCollisionTime();
+  if(animating) displayCollisionTime();
 
   change=false; // to avoid capturing frames when nothing happens (change is set uppn action)
 
@@ -201,7 +194,6 @@ void keyPressed() {
   if(key=='w') P.saveBALLS("data/BALLS");   // save vertices to BALLS
   if(key=='l') P.loadBALLS("data/BALLS"); 
   if(key=='#') exit();
-  if(key=='z'){  outFile.flush(); outFile.close(); }
   change=true;
   }
 

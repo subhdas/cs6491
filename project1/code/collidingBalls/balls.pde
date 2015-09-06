@@ -42,17 +42,11 @@ class BALLS {          // class for manipulaitng and displaying points
 
   }
 
-  // static final int Wxp = -1;    // positive x wall
-  // static final int Wxn = -2;    // negative x wall
-  // static final int Wyp = -3;
-  // static final int Wyn = -4;
-  // static final int Wzp = -5;
-  // static final int Wzn = -6;
-
   Colli[] colli;                // nv element array
   int minIndex;                 // next collision index
   float minTime;                // next collision time 
   float internalTime;           // internal timer
+  int numOfCollisions;          // number of collision per frame
 
 
   /**
@@ -264,6 +258,13 @@ class BALLS {          // class for manipulaitng and displaying points
     internalTime = 0;
   }
 
+  /**
+   * Physical proecess to bounce two balls. Velocity in the parallel
+   * direction (along the line conneting these two balls) will exchange.
+   * Velocity in perpendicular direction keeps the same.
+   *
+   * @param i, j  indices of these two balls
+   */
   void bounceTwoBalls(int i, int j){
     pt A = G[i];
     pt B = G[j];
@@ -287,6 +288,19 @@ class BALLS {          // class for manipulaitng and displaying points
     m[j] = del;
   }
 
+  /**
+   * Physical process to bounce one ball with one wall. 
+   * The index of walls are
+   *   -1 : negative x wall
+   *   -2 : positive x wall
+   *   -3 : negative y wall
+   *   -4 : positive y wall
+   *   -5 : negative z wall
+   *   -6 : positive z wall
+   *
+   * @param i              index of the ball
+   * @param wallIndex      index of the wall
+   */
   void bounceBallWall(int i, int wallIndex){
     switch (wallIndex){
 
@@ -314,6 +328,16 @@ class BALLS {          // class for manipulaitng and displaying points
     m[i] = del;
   }
 
+  /**
+   * Update system state after two balls collide.
+   *
+   * The complexity of this process is linear on average. The worst
+   * case is quadratic.
+   * 
+   * @param k1     index of one ball
+   * @param k2     index of the other ball
+   * @param w      width of the box
+   */
   void updateB2BColli(int k1, int k2, float w) {
     // bounce these two colliding balls
     bounceTwoBalls(k1, k2); 
@@ -328,6 +352,8 @@ class BALLS {          // class for manipulaitng and displaying points
         // if the minimal time collision is not with k1 or k2
         // this part is linear
         if( colli[i].p != k1 && colli[i].p != k2) {
+          // first substract the internal time because the time is reset
+          // whenever collision happens.
           colli[i].t -= internalTime;
           float t1 = calB2BTime(G[i], G[k1], V[i], V[k1], r[i], r[k1]);
           float t2 = calB2BTime(G[i], G[k2], V[i], V[k2], r[i], r[k2]);
@@ -350,9 +376,17 @@ class BALLS {          // class for manipulaitng and displaying points
         }
       }
     }
-
   }
-
+  
+  /**
+   * Update system state after one ball collides with a wall.
+   *
+   * The complexity of this process is linear on average.
+   * 
+   * @param k             index of one ball
+   * @param wallIndex     index of the other ball
+   * @param w             width of the box
+   */
   void updateB2WColli(int k, int wallIndex, float w){
     // bounce the ball and wall
     bounceBallWall(k, wallIndex);
@@ -377,29 +411,17 @@ class BALLS {          // class for manipulaitng and displaying points
     }
   }
 
-  
-  // void updateColli(float m, float w){
-  //   while (internalTime + m >= minTime){
-  //     ArrayList<Integer> collisionList = new ArrayList<Integer>();
-  //     for(int i = 0; i < nv; i++){
-  //       int k = colli[i].p;
-  //       if(internalTime + m >= colli[i].t && (collisionList.contains(k) == false || i != colli[k].p)){
-  //         collisionList.add(i);
-  //       }
-  //     }
-  //     for(int i : collisionList){
-  //       int k = colli[i].p;
-  //       // k < 0 => ball-wall collision
-  //       if (k < 0) updateB2WColli(i, k, w);
-  //       else updateB2BColli(i, k, w);
-  //     }
-  //     minIndex = getMinIndex();
-  //     minTime = colli[minIndex].t; 
-  //     internalTime = 0;           // reset internal timer
-  //   }
-  // } 
-
+  /**
+   * The main function to update the state whenever collision is about to happen.
+   *
+   * Note, the while loop in the function is necessary because several different
+   * collision may happen in a single frame.
+   * 
+   * @param m  the scaling factor for velocity
+   * @param w  the width of box
+   */
   void updateColli(float m, float w){
+    numOfCollisions = 0;
     while (internalTime + m >= minTime){
       int i = minIndex;
       int k = colli[i].p;
@@ -410,71 +432,23 @@ class BALLS {          // class for manipulaitng and displaying points
       minIndex = getMinIndex();
       minTime = colli[minIndex].t; 
       internalTime = 0;           // reset internal timer
+
+      numOfCollisions++;
     }
   }
 
   
   /**
+   * Advance the system in time. The main interface of this project.
+   * 
    * @param m  the scaling factor for velocity
    */
   void updateState(float m, float w){
-    // println("iner timer ", internalTime);
     updateColli(m, w);
     internalTime += m;
     advectBalls(m);
   }
 
-  boolean checkBound(float w){
-    outFile.println(" ======================================================================= ");
-    
-    outFile.print("inner time : ");
-    outFile.println(internalTime);
-    outFile.print("minTime: ");
-    outFile.println(minTime);
-    
-    for (int i = 0; i < nv; i++) {
-
-      outFile.println();
-      outFile.print("ball : ");
-      outFile.println(i);
-      outFile.print("(");
-      outFile.print(G[i].x);
-      outFile.print("  ");
-      outFile.print(G[i].y);
-      outFile.print("  ");
-      outFile.print(G[i].z);
-      outFile.println(")");
-      outFile.print("(");
-      outFile.print(V[i].x);
-      outFile.print("  ");
-      outFile.print(V[i].y);
-      outFile.print("  ");
-      outFile.print(V[i].z);
-      outFile.println(")");
-      outFile.print("collsion : ");
-      outFile.print(colli[i].p);
-      outFile.print("  ");
-      outFile.println(colli[i].t);
-      
-      if( G[i].x > w/2 - r[i] || G[i].x < -w/2 + r[i] ||
-          G[i].y > w/2 - r[i] || G[i].y < -w/2 + r[i] ||
-          G[i].z > w/2 - r[i] || G[i].z < -w/2 + r[i]){
-        
-        println("outside boundary !", i);
-        G[i].show();
-        V[i].show();
-        println();
-        println("minTime: ", minTime, "minIndex : ", minIndex);
-        println("detail : ", colli[i].p, colli[i].t);
-
-        c[i] = 0;
-        return false;
-      }
-      
-    }
-
-    return true;
-  }
 
   //////////////////////////////////////////////////////////////////////
   //                   END : add by student                           //
