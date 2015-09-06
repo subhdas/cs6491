@@ -24,23 +24,7 @@ class BALLS {          // class for manipulaitng and displaying points
     return this;
   }     // init all point objects
 
-  /**
-   * initialize balls on a grid [nb x nb x nb]
-   * @param nb       number of BALLS in each dimension
-   * @param w        length of cube
-   * @param r        radius of the ball
-   * @param c        color of the ball
-   * @param vRange   initial velocity range
-   */
-  void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
-    empty();
-    float d = w / (nb+1), dd=d;
-    for (int i=0; i<nb; i++) 
-      for (int j=0; j<nb; j++) 
-        for (int k=0; k<nb; k++)
-          addBall(P(d*i-w/2+dd, d*j-w/2+dd, d*k-w/2+dd),
-                  V(random(-vRange, vRange), random(-vRange, vRange), random(-vRange, vRange)), r, c);
-  }
+
 
 
 
@@ -55,6 +39,7 @@ class BALLS {          // class for manipulaitng and displaying points
       p = index;
       t = time;
     }
+
   }
 
   // static final int Wxp = -1;    // positive x wall
@@ -68,35 +53,60 @@ class BALLS {          // class for manipulaitng and displaying points
   int minIndex;                 // next collision index
   float minTime;                // next collision time 
   float internalTime;           // internal timer
+
+
   /**
-   * this alternative initialization function is used to test the one to one collision
-   * for debug purpose.
+   * initialize balls on a grid [nb x nb x nb]
+   * 
+   * For debug purpose, I add a few other configurations.
+   *
+   * @param nb       number of BALLS in each dimension
+   * @param w        length of cube
+   * @param r        radius of the ball
+   * @param c        color of the ball
+   * @param vRange   initial velocity range
    */
-  // void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
-  //   empty();
+  void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
+    empty();
+    float d = w / (nb+1), dd=d;
 
-  //   int No = 3;
-  //   switch (No) {
+    // few different configurations. The default one is No = 1
+    int No = 1;
+    switch (No) {
       
-  //   case 1:                     // test bounce wall
-  //     addBall(P(-100, 100, 0), V(1, 0, 0), r, c);
-  //     addBall(P(100, 100, 0), V(1, 0, 0), r, c);
-  //     break;
+    case 1:
+      for (int i=0; i<nb; i++) 
+        for (int j=0; j<nb; j++) 
+          for (int k=0; k<nb; k++)
+            addBall(P(d*i-w/2+dd, d*j-w/2+dd, d*k-w/2+dd),
+                    V(random(-vRange, vRange), random(-vRange, vRange), random(-vRange, vRange)), r, c);
+      break;
+
+    case 2:                     // test bounce wall
+      addBall(P(-100, 100, 0), V(1, 0, 0), r, c);
+      addBall(P(100, 100, 0), V(1, 0, 0), r, c);
+      break;
       
-  //   case 2:                     // test ball bounce
-  //     addBall(P(-100, 100, 0), V(1, 0, 0), r, c);
-  //     addBall(P(100, 100, 0), V(-1, 0, 0), r, c);
-  //     break;
+    case 3:                     // test ball bounce
+      addBall(P(-100, 100, 0), V(1, 0, 0), r, c);
+      addBall(P(100, 100, 0), V(-1, 0, 0), r, c);
+      break;
 
-  //   case 3: // test a more complicated case
-  //     addBall(P(-100, 0, 100), V(1, 0, -1), r, c);
-  //     addBall(P(100, 0, -100), V(-1, 0, 1), r, c);
+    case 4:                     // test ball bounce
+      addBall(P(-100, 100, 0), V(2, 0, 0), r, c);
+      addBall(P(100, 100, 0), V(-1, 0, 0), r, c);
+      break;
 
-  //   default:
-  //     break;
-  //   }
-  // }
+    case 5:                     // test a more complicated case
+      addBall(P(-100, 0, 100), V(2, 0, -2), r, c);
+      addBall(P(100, 0, -100), V(-1, 0, 1), r, c);
+      break;
 
+    default:
+      break;
+    }
+  }
+ 
 
   /**
    * Calculate the collision time between two balls. If two balls cannot
@@ -152,7 +162,7 @@ class BALLS {          // class for manipulaitng and displaying points
     else {
       float time = (wall - ball) / v;
       if (time < 0) return -1;
-      else return (wall - ball) / v;
+      else return time;
     }
   }
 
@@ -179,7 +189,7 @@ class BALLS {          // class for manipulaitng and displaying points
     time[5] = calB2WTime(w/2-r, a.z, v.z);
 
     // for( int i = 0; i < 6; i++) println(time[i]);
-    return time;
+    return time; 
   }
 
 
@@ -189,18 +199,20 @@ class BALLS {          // class for manipulaitng and displaying points
    *
    * @param i  the index of one ball
    */
-  Colli calOneBallColli(int i) {
+  Colli calOneBallColli(int i, float w) {
     float time = Float.POSITIVE_INFINITY;
     int index = 0;
 
+    // calculate the collision time with walls
     float[] t = calB2WTimeAll(G[i], V[i], w, r[i]);
     for (int j = 0; j < 6; j++){
-      if(t[j] >= 0 && t[j] < minTime){
-        minTime = t[j];
+      if(t[j] >= 0 && t[j] < time){
+        time = t[j];
         index = -(j+1);
         }
     }
-    
+
+    // calculate the collision time with balls
     for (int j = 0; j < nv; j++){
       if (j != i) {
         float t2 = calB2BTime(G[i], G[j], V[i], V[j], r[i], r[j]);
@@ -209,7 +221,7 @@ class BALLS {          // class for manipulaitng and displaying points
           index = j;
         }
       }
-    }
+    } 
     
     return new Colli(index, time);
   }
@@ -244,7 +256,7 @@ class BALLS {          // class for manipulaitng and displaying points
     colli = new Colli[nv];
  
     for ( int i = 0; i < nv; i++){
-      colli[i] = calOneBallColli(i);
+      colli[i] = calOneBallColli(i, w);
     }
 
     minIndex = getMinIndex();
@@ -265,8 +277,14 @@ class BALLS {          // class for manipulaitng and displaying points
     vec vbPerpen = M(vb, vbParallel);
 
     // update the velocity
-    V[i] = A(vbParallel, vaPerpen);
-    V[j] = A(vaParallel, vbPerpen);
+    V[i] = A(vbParallel, vaPerpen); 
+    V[j] = A(vaParallel, vbPerpen); 
+
+    // change color
+    c[i] = red;
+    c[j] = red;
+    m[i] = del;
+    m[j] = del;
   }
 
   void bounceBallWall(int i, int wallIndex){
@@ -290,16 +308,19 @@ class BALLS {          // class for manipulaitng and displaying points
     default:
       println("wrong wall index !");
     }
-    
+
+    // change color
+    c[i] = green;
+    m[i] = del;
   }
 
-  void updateB2BColli(int k1, int k2) {
+  void updateB2BColli(int k1, int k2, float w) {
     // bounce these two colliding balls
-    bounceTwoBalls(k1, k2);
+    bounceTwoBalls(k1, k2); 
     
     // update the collision time of these two balls
-    colli[k1] = calOneBallColli(k1);
-    colli[k2] = calOneBallColli(k2);
+    colli[k1] = calOneBallColli(k1, w); 
+    colli[k2] = calOneBallColli(k2, w); 
 
     // update the collision time of remaining balls
     for( int i = 0; i < nv; i++){
@@ -307,6 +328,7 @@ class BALLS {          // class for manipulaitng and displaying points
         // if the minimal time collision is not with k1 or k2
         // this part is linear
         if( colli[i].p != k1 && colli[i].p != k2) {
+          colli[i].t -= internalTime;
           float t1 = calB2BTime(G[i], G[k1], V[i], V[k1], r[i], r[k1]);
           float t2 = calB2BTime(G[i], G[k2], V[i], V[k2], r[i], r[k2]);
           float[] ts = {colli[i].t, t1, t2};
@@ -315,7 +337,7 @@ class BALLS {          // class for manipulaitng and displaying points
           float time = Float.POSITIVE_INFINITY;
           int index = 0;
           for (int j = 0; j < 3; j++){
-            if(ts[j] < time) {
+            if(ts[j] >=0 && ts[j] < time) {
               time = ts[j];
               index = indices[j];
             }
@@ -324,19 +346,19 @@ class BALLS {          // class for manipulaitng and displaying points
         }
         // if the minimal time collision is with k1 or k2
         else {
-          colli[i] = calOneBallColli(i);
+          colli[i] = calOneBallColli(i, w);
         }
       }
     }
-    
+
   }
 
-  void updateB2WColli(int k, int wallIndex){
+  void updateB2WColli(int k, int wallIndex, float w){
     // bounce the ball and wall
     bounceBallWall(k, wallIndex);
 
     // update the collision time of the ball
-    colli[k] = calOneBallColli(k);
+    colli[k] = calOneBallColli(k, w);
 
     // update the collision time of remaining balls
     for( int i = 0; i < nv; i++){
@@ -344,36 +366,114 @@ class BALLS {          // class for manipulaitng and displaying points
         // if the minimal time collision is not with ball k
         // this part is linear
         if(colli[i].p != k) {
+          colli[i].t -= internalTime;
           float t = calB2BTime(G[i], G[k], V[i], V[k], r[i], r[k]);
-          if(t < colli[i].t) colli[i] = new Colli(k, t);
+          if(t >= 0 && t < colli[i].t) colli[i] = new Colli(k, t);
         }
         else {
-          colli[i] = calOneBallColli(i);
+          colli[i] = calOneBallColli(i, w);
         }
       }
     }
-    
   }
-  
-  void updateColli(){
-    int k = colli[minIndex].p;
-    
-    if (k < 0) updateB2BColli(minIndex, k);
-    else updateB2WColli(minIndex, k);
 
-    minIndex = getMinIndex();
-    minTime = colli[minIndex].t;
-    internalTime = 0;           // reset internal timer
+  
+  // void updateColli(float m, float w){
+  //   while (internalTime + m >= minTime){
+  //     ArrayList<Integer> collisionList = new ArrayList<Integer>();
+  //     for(int i = 0; i < nv; i++){
+  //       int k = colli[i].p;
+  //       if(internalTime + m >= colli[i].t && (collisionList.contains(k) == false || i != colli[k].p)){
+  //         collisionList.add(i);
+  //       }
+  //     }
+  //     for(int i : collisionList){
+  //       int k = colli[i].p;
+  //       // k < 0 => ball-wall collision
+  //       if (k < 0) updateB2WColli(i, k, w);
+  //       else updateB2BColli(i, k, w);
+  //     }
+  //     minIndex = getMinIndex();
+  //     minTime = colli[minIndex].t; 
+  //     internalTime = 0;           // reset internal timer
+  //   }
+  // } 
+
+  void updateColli(float m, float w){
+    while (internalTime + m >= minTime){
+      int i = minIndex;
+      int k = colli[i].p;
+      // k < 0 => ball-wall collision
+      if (k < 0) updateB2WColli(i, k, w);
+      else updateB2BColli(i, k, w);
+
+      minIndex = getMinIndex();
+      minTime = colli[minIndex].t; 
+      internalTime = 0;           // reset internal timer
+    }
   }
 
   
   /**
    * @param m  the scaling factor for velocity
    */
-  void updateState(float m){
-    if (internalTime >= minTime) updateColli();
+  void updateState(float m, float w){
+    // println("iner timer ", internalTime);
+    updateColli(m, w);
     internalTime += m;
     advectBalls(m);
+  }
+
+  boolean checkBound(float w){
+    outFile.println(" ======================================================================= ");
+    
+    outFile.print("inner time : ");
+    outFile.println(internalTime);
+    outFile.print("minTime: ");
+    outFile.println(minTime);
+    
+    for (int i = 0; i < nv; i++) {
+
+      outFile.println();
+      outFile.print("ball : ");
+      outFile.println(i);
+      outFile.print("(");
+      outFile.print(G[i].x);
+      outFile.print("  ");
+      outFile.print(G[i].y);
+      outFile.print("  ");
+      outFile.print(G[i].z);
+      outFile.println(")");
+      outFile.print("(");
+      outFile.print(V[i].x);
+      outFile.print("  ");
+      outFile.print(V[i].y);
+      outFile.print("  ");
+      outFile.print(V[i].z);
+      outFile.println(")");
+      outFile.print("collsion : ");
+      outFile.print(colli[i].p);
+      outFile.print("  ");
+      outFile.println(colli[i].t);
+      
+      if( G[i].x > w/2 - r[i] || G[i].x < -w/2 + r[i] ||
+          G[i].y > w/2 - r[i] || G[i].y < -w/2 + r[i] ||
+          G[i].z > w/2 - r[i] || G[i].z < -w/2 + r[i]){
+        
+        println("outside boundary !", i);
+        G[i].show();
+        V[i].show();
+        println();
+        println("minTime: ", minTime, "minIndex : ", minIndex);
+        println("detail : ", colli[i].p, colli[i].t);
+
+        c[i] = 0;
+        return false;
+      }
+      
+    }
+
+    return true;
   }
 
   //////////////////////////////////////////////////////////////////////

@@ -26,18 +26,16 @@ boolean center=true;
 boolean showNormals=false;
 
 float t=0, s=0;
-float accumT = 0;
 float w=400;            // half-size of the cube
 float mv=3;             // magnifier of max initial speed of the balls
 pt F = P(0, 0, 0); // focus point:  the camera is looking at it (moved when 'f or 'F' are pressed
 pt Of=P(100, 100, 0), Ob=P(110, 110, 0); // red point controlled by the user via mouseDrag : used for inserting vertices ...
 
-int nbs = 3;                    // number of balls = nbs*nbs*nbs
+int nbs = 4;                    // number of balls = nbs*nbs*nbs
 float br = 20;                  // ball radius
 int frate = 20;                 // frame rate
 float u = 1./frate;             // time between consecutive frames
 float vRange = 1;               // range of initial speed
-boolean firstCollision = false; // whether the first collision is about to happen in the next frame
 boolean stop=false; // stops animation if computation took  more than u
 boolean individual=false;
 boolean showV=false;
@@ -49,12 +47,13 @@ String name ="Xiong Ding";
 String menu="?:help, !:picture, ~:videotape, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit";
 String guide="m:speed, e:exchange, q/p:copy, l/L: load, w/W:write to file"; // user's guide
 
+PrintWriter outFile;
 void setup() {
   myFace = loadImage("data/selfie.JPG");
   textureMode(NORMAL);          
   size(600, 600, P3D); // p3D means that we will do 3D graphics
   frameRate(frate);
-  sphereDetail(12);
+  sphereDetail(6);
   P.declare(); 
   Q.declare(); 
   PtQ.declare(); // declare 3 sets of balls (we advect and animate P, othres used for copy
@@ -64,10 +63,11 @@ void setup() {
   P.initCollision(w);
   F = P();
   noSmooth();
+
+  outFile = createWriter("debug.txt"); 
 }
 
 void draw() {
-  accumT++; 
   t0 = millis();
   background(255);
   pushMatrix();   // to ensure that we can restore the standard view before writing on the canvas
@@ -95,14 +95,9 @@ void draw() {
   // println(P.minTime);
   // println(accumT);
   if(animating && !stop) {
-    if (accumT * mv < P.minTime){
-      P.advectBalls(mv);
-      P.resetColors(cyan);
-      P.bounceBalls(w);
-    }
-    else {
-      firstCollision = true;
-    }
+    P.updateState(mv, w);
+    if (P.checkBound(w) == false) stop = true;
+    P.resetColors(cyan);
   } // advection
 
   t2 = millis();
@@ -146,7 +141,7 @@ void draw() {
          nf(collisions,3,0)+" collisions per frame",10,40); 
   scribe("dt01 = "+nf(dt01,2,1)+"%, dt12 = "+nf(dt12,2,1)+"%, dt23 = " +
          nf(dt23,2,1)+"%, dt34 = "+nf(dt34,2,1)+"%",10,60);
-  if(animating) displayCollisionTime();
+  // if(animating) displayCollisionTime();
 
   change=false; // to avoid capturing frames when nothing happens (change is set uppn action)
 
@@ -173,9 +168,7 @@ void keyPressed() {
   if(key=='i') {
     P.initPointsOnGrid(nbs,w,br,cyan, vRange);
     P.initCollision(w);
-    accumT = 0;
     stop=false;
-    firstCollision = false;
   }
   if(key=='a') animating=!animating; // toggle animation
   if(key=='h') {F = P();}  // "home": reserts Focus point F
@@ -208,6 +201,7 @@ void keyPressed() {
   if(key=='w') P.saveBALLS("data/BALLS");   // save vertices to BALLS
   if(key=='l') P.loadBALLS("data/BALLS"); 
   if(key=='#') exit();
+  if(key=='z'){  outFile.flush(); outFile.close(); }
   change=true;
   }
 

@@ -104,6 +104,10 @@ class vec {
     add(x*s+y*c-y, J); 
     return this;
   };
+
+  void show(){
+    print("(", x, y, z, ")");
+  }
 } // end class vec
 
 /***************************************/
@@ -193,6 +197,10 @@ class pt {
     z/=f; 
     return this;
   };
+
+  void show(){
+    print("(", x, y, z, ")");
+  }
 }
 
 /*************************************************************/
