@@ -58,9 +58,8 @@ class BALLS {          // class for manipulaitng and displaying points
    * @param w        length of cube
    * @param r        radius of the ball
    * @param c        color of the ball
-   * @param vRange   initial velocity range
    */
-  void initPointsOnGrid(int nb, float w, float r, color c, float vRange) { 
+  void initPointsOnGrid(int nb, float w, float r, color c) { 
     empty();
     float d = w / (nb+1), dd=d;
 
@@ -73,7 +72,7 @@ class BALLS {          // class for manipulaitng and displaying points
         for (int j=0; j<nb; j++) 
           for (int k=0; k<nb; k++)
             addBall(P(d*i-w/2+dd, d*j-w/2+dd, d*k-w/2+dd),
-                    V(random(-vRange, vRange), random(-vRange, vRange), random(-vRange, vRange)), r, c);
+                    V(random(-1, 1), random(-1, 1), random(-1, 1)), r, c);
       break;
 
     case 2:                     // test bounce wall
