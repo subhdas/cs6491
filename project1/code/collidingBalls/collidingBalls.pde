@@ -164,8 +164,8 @@ void keyPressed() {
   }
   if(key=='a') animating=!animating; // toggle animation
   if(key=='h') {F = P();}  // "home": reserts Focus point F
-  if(key=='+') {nbs++; br=w/(nbs*pow(PI*120/4,1./3)); P.initPointsOnGrid(nbs,w,br,cyan); stop=true;}
-  if(key=='-') {nbs=max(1,nbs-1); br=w/(nbs*pow(PI*120/4,1./3)); P.initPointsOnGrid(nbs,w,br,cyan); stop=true;}
+  if(key=='+') {nbs++; br=w/(nbs*pow(PI*120/4,1./3)); P.initPointsOnGrid(nbs,w,br,cyan); P.initCollision(w); stop=true;}
+  if(key=='-') {nbs=max(1,nbs-1); br=w/(nbs*pow(PI*120/4,1./3)); P.initPointsOnGrid(nbs,w,br,cyan); P.initCollision(w); stop=true;}
   if(key=='r') {br=w/(nbs*pow(PI*120/4,1./3)); P.initPointsOnGrid(nbs,w,br,cyan); stop=true;}
   if(key=='4') sphereDetail(4);
   if(key=='5') sphereDetail(5);
@@ -233,7 +233,7 @@ void mouseDragged() {
     else F.add(ToK(V((float)(mouseX-pmouseX),(float)(mouseY-pmouseY),0))); 
     }
   if (keyPressed && key=='m') {mv+=(float)(mouseX-pmouseX)/width;} // adjust animation speed
-  if (keyPressed && key=='b') {br+=10.*(float)(mouseX-pmouseX)/width; P.initPointsOnGrid(nbs,w,br,cyan); stop=true;} // adjust animation speed
+  if (keyPressed && key=='b') {br+=10.*(float)(mouseX-pmouseX)/width; P.initPointsOnGrid(nbs,w,br,cyan); P.initCollision(w); stop=true;} // adjust animation speed
   }  
 
 // **** Header, footer, help text on canvas

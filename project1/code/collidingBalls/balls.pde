@@ -354,26 +354,34 @@ class BALLS {          // class for manipulaitng and displaying points
           // first substract the internal time because the time is reset
           // whenever collision happens.
           colli[i].t -= internalTime;
-          float t1 = calB2BTime(G[i], G[k1], V[i], V[k1], r[i], r[k1]);
-          float t2 = calB2BTime(G[i], G[k2], V[i], V[k2], r[i], r[k2]);
-          float[] ts = {colli[i].t, t1, t2};
-          int[] indices = {colli[i].p,  k1, k2};
-
-          float time = Float.POSITIVE_INFINITY;
-          int index = 0;
-          for (int j = 0; j < 3; j++){
-            if(ts[j] >=0 && ts[j] < time) {
-              time = ts[j];
-              index = indices[j];
-            }
-          }
-          colli[i] = new Colli(index, time);
+//          float t1 = calB2BTime(G[i], G[k1], V[i], V[k1], r[i], r[k1]);
+//          float t2 = calB2BTime(G[i], G[k2], V[i], V[k2], r[i], r[k2]);
+//          float[] ts = {colli[i].t, t1, t2};
+//          int[] indices = {colli[i].p,  k1, k2};
+//
+//          float time = Float.POSITIVE_INFINITY;
+//          int index = 0;
+//          for (int j = 0; j < 3; j++){
+//            if(ts[j] >=0 && ts[j] < time) {
+//              time = ts[j];
+//              index = indices[j];
+//            }
+//          }
+//          colli[i] = new Colli(index, time);
         }
         // if the minimal time collision is with k1 or k2
         else {
           colli[i] = calOneBallColli(i, w);
         }
       }
+    }
+    if(colli[k1].p >= 0 && colli[k1].t < colli[colli[k1].p].t){
+      colli[colli[k1].p].p = k1;
+      colli[colli[k1].p].t = colli[k1].t;
+    }
+    if(colli[k2].p >= 0 && colli[k2].t < colli[colli[k2].p].t){
+      colli[colli[k2].p].p = k2;
+      colli[colli[k2].p].t = colli[k2].t;
     }
   }
   
@@ -400,13 +408,17 @@ class BALLS {          // class for manipulaitng and displaying points
         // this part is linear
         if(colli[i].p != k) {
           colli[i].t -= internalTime;
-          float t = calB2BTime(G[i], G[k], V[i], V[k], r[i], r[k]);
-          if(t >= 0 && t < colli[i].t) colli[i] = new Colli(k, t);
+//          float t = calB2BTime(G[i], G[k], V[i], V[k], r[i], r[k]);
+//          if(t >= 0 && t < colli[i].t) colli[i] = new Colli(k, t);
         }
         else {
           colli[i] = calOneBallColli(i, w);
         }
       }
+    }
+    if(colli[k].p >= 0 && colli[k].t < colli[colli[k].p].t){
+      colli[colli[k].p].p = k;
+      colli[colli[k].p].t = colli[k].t;
     }
   }
 
