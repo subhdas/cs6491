@@ -64,7 +64,7 @@ class BALLS {          // class for manipulaitng and displaying points
     float d = w / (nb+1), dd=d;
 
     // few different configurations. The default one is No = 1
-    int No = 1;
+    int No = 5;
     switch (No) {
       
     case 1:

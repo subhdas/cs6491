@@ -89,7 +89,7 @@ void draw() {
   if(animating && !stop) {
     P.updateState(mv, w);
     P.resetColors(cyan);
-    collisions = P.numOfCollisions; println(collisions);
+    collisions = P.numOfCollisions;
   } // advection
 
   t2 = millis();
