@@ -64,7 +64,7 @@ class BALLS {          // class for manipulaitng and displaying points
     float d = w / (nb+1), dd=d;
 
     // few different configurations. The default one is No = 1
-    int No = 5;
+    int No = 1;
     switch (No) {
       
     case 1:
@@ -354,20 +354,6 @@ class BALLS {          // class for manipulaitng and displaying points
           // first substract the internal time because the time is reset
           // whenever collision happens.
           colli[i].t -= internalTime;
-//          float t1 = calB2BTime(G[i], G[k1], V[i], V[k1], r[i], r[k1]);
-//          float t2 = calB2BTime(G[i], G[k2], V[i], V[k2], r[i], r[k2]);
-//          float[] ts = {colli[i].t, t1, t2};
-//          int[] indices = {colli[i].p,  k1, k2};
-//
-//          float time = Float.POSITIVE_INFINITY;
-//          int index = 0;
-//          for (int j = 0; j < 3; j++){
-//            if(ts[j] >=0 && ts[j] < time) {
-//              time = ts[j];
-//              index = indices[j];
-//            }
-//          }
-//          colli[i] = new Colli(index, time);
         }
         // if the minimal time collision is with k1 or k2
         else {
@@ -408,8 +394,6 @@ class BALLS {          // class for manipulaitng and displaying points
         // this part is linear
         if(colli[i].p != k) {
           colli[i].t -= internalTime;
-//          float t = calB2BTime(G[i], G[k], V[i], V[k], r[i], r[k]);
-//          if(t >= 0 && t < colli[i].t) colli[i] = new Colli(k, t);
         }
         else {
           colli[i] = calOneBallColli(i, w);

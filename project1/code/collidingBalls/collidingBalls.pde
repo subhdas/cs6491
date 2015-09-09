@@ -42,6 +42,9 @@ String name ="Xiong Ding";
 String menu="?:help, !:picture, ~:videotape, space:rotate, s/wheel:closer, f/F:refocus, a:anim, #:quit";
 String guide="m:speed, e:exchange, q/p:copy, l/L: load, w/W:write to file"; // user's guide
 
+PrintWriter outFile;
+int numOfData = 0;
+int frameIndex = 0;
 void setup() {
   myFace = loadImage("data/selfie.JPG");
   textureMode(NORMAL);          
@@ -57,6 +60,8 @@ void setup() {
   P.initCollision(w);
   F = P();
   noSmooth();
+
+  outFile = createWriter("output.txt"); 
 }
 
 void draw() {
@@ -90,6 +95,8 @@ void draw() {
     P.updateState(mv, w);
     P.resetColors(cyan);
     collisions = P.numOfCollisions;
+    writePerformance();
+    frameIndex = (frameIndex + 1) % 10;
   } // advection
 
   t2 = millis();
@@ -193,6 +200,7 @@ void keyPressed() {
   if(key=='w') P.saveBALLS("data/BALLS");   // save vertices to BALLS
   if(key=='l') P.loadBALLS("data/BALLS"); 
   if(key=='#') exit();
+  if(key=='z'){  if (numOfData == 50) {outFile.flush(); outFile.close();} }
   change=true;
   }
 
@@ -270,5 +278,25 @@ void displayCollisionTime(){
            , 10, 100);
   }
   scribe("The first collision time is " +  nf(P.minTime/frate, 2, 2) + " seconds. ", 10, 120);
+
+}
+
+void writePerformance(){
+  
+  if (frameIndex == 5 && numOfData < 50) {
+    outFile.print(dt01);
+    outFile.print("    ");
+    outFile.print(dt12);
+    outFile.print("    ");
+    outFile.print(dt23);
+    outFile.print("    ");
+    outFile.print(dt34);
+    outFile.print("    ");
+    outFile.print(collisions);
+    outFile.println();
+    
+    numOfData++;
+    println(numOfData);
+  }
 
 }
