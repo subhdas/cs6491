@@ -59,7 +59,7 @@ Calculate the collision time between two balls. If two balls cannot collide in p
 \subsubsection{float calB2WTime()}
 Calculate the collision time between one ball and one wall. If they cannot collide in positive finite time, then return -1. We solve linear equation with regard to $P_0$, $V_0$, $r$, $R$, $t$ to get the minimal collision time.
 
-\subsubsection(Colli calOneBallColli)
+\subsubsection{Colli calOneBallColli()}
 Calculate the smallest collision time between ball i and other balls and walls. This function checks all possibilities between one ball and all the other balls, and all six walls. A minimum collision time is maintained along with the next collision object (a ball or a wall). The complexity of this function is O(n), where n is the number of balls.
 
 \subsubsection{void initCollision()}
